@@ -9,7 +9,7 @@
 # include "RF24.h"
 # include <Adafruit_MCP3008.h>
 # include "SignalProcessing.h"
-# include "Menu.h"
+# include <LoRa.h>
 
 
 //mosi = tx, miso = rx
@@ -22,9 +22,17 @@
 //########## variabeles, objects, arrays ##########
 bool blink = LOW;
 
+//RFM96W
+#define rfm95w_mosi 15
+#define rfm95w_miso 12
+#define rfm95w_sck 14
+#define rfm95w_cs 13
+#define rfm95w_reset 20
+int counter = 0;
+
 //RF24
-RF24 radio; //CE, CSN
-uint8_t address[][6] = {"00001"};
+//RF24 radio(20, 17);
+//uint8_t address[][6] = {"00001"};
 
 //MCP3008
 Adafruit_MCP3008 adc1;
@@ -32,9 +40,6 @@ Adafruit_MCP3008 adc2;
 
 //SignalProcesing
 SignalProcessing sp;
-
-//Menu
-Menu menu;
 
 struct ServoData {
   byte sD0=0;
@@ -91,16 +96,21 @@ void setup() {
 
   //serial setup
   Serial.begin(115200);
+
   delay(100);
   menu.setupTFT();
   adc1.begin(ADC1_CS, &SPI1);
   adc2.begin(ADC2_CS, &SPI1);
-  radio.begin(&SPI1, NRF24_CE, NRF24_CSN);
-  delay(100);
-  radio.setPALevel(RF24_PA_LOW);
-  radio.setPayloadSize(sizeof(servoData));
-  radio.openWritingPipe(address[0]);
-  radio.stopListening();
+  Serial.println("LoRa Sender");
+  LoRa.setPins(rfm95w_cs, rfm95w_reset, 2);
+  LoRa.setSPI(SPI1);
+  if (!LoRa.begin(868E6)) {
+    Serial.println("Starting LoRa failed!");
+    while (1);
+  }
+  else {
+    Serial.println("Starting LoRa successfull!");
+  }
   
   //preparing the index in mafData
   for(int i=0; i<10; i++) {
@@ -147,7 +157,9 @@ void loop() {
   //servoData.sD15 = sp.digital3Way(15, 6);
   
   //sending data to the radio
-  radio.write(&servoData, sizeof(servoData));
+  LoRa.beginPacket();
+  LoRa.write(servoData, sizeof(servoData));
+  LoRa.endPacket();
 }
 
 
