@@ -6,15 +6,13 @@
 //########## librarys ##########
 # include "SPI.h"
 # include "printf.h"
-# include "RF24.h"
 # include <Adafruit_MCP3008.h>
 # include "SignalProcessing.h"
 # include <LoRa.h>
+# include "Menu.h"
 
 
 //mosi = tx, miso = rx
-# define NRF24_CSN  13
-# define NRF24_CE   20
 # define ADC1_CS    21
 # define ADC2_CS    22
 
@@ -29,10 +27,6 @@ bool blink = LOW;
 #define rfm95w_cs 13
 #define rfm95w_reset 20
 int counter = 0;
-
-//RF24
-//RF24 radio(20, 17);
-//uint8_t address[][6] = {"00001"};
 
 //MCP3008
 Adafruit_MCP3008 adc1;
@@ -64,6 +58,8 @@ ServoData servoData;
 //array for moving average filter
 #define windowSize 5
 int mafData[10][windowSize+2] = {};  // index (0), sum (1), readings[windowSize] (3-windowSize-1)
+
+Menu menu;
 
 
 //########## methods ##########
@@ -157,9 +153,9 @@ void loop() {
   //servoData.sD15 = sp.digital3Way(15, 6);
   
   //sending data to the radio
-  LoRa.beginPacket();
-  LoRa.write(servoData, sizeof(servoData));
-  LoRa.endPacket();
+  //LoRa.beginPacket();
+  //LoRa.print(90);
+  //LoRa.endPacket();
 }
 
 
